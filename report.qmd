@@ -1,0 +1,59 @@
+---
+title: "CIN-MNH"
+subtitle: "Data Entry Trends"
+date: today
+date-format: "DD MMMM YYYY"
+format: 
+  pptx:
+    reference-doc: assets/template.pptx  # Optional: custom template
+    slide-level: 2
+    keep-md: false
+    fig-width: 9
+    fig-height: 5
+    fig-dpi: 300
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+```{r}
+#| include: false
+
+library(ggplot2)
+library(dplyr)
+library(glue)
+
+source(here::here("R", "01_extract_redcap.R"))
+source(here::here("R", "02_calendar_dimension.R"))
+source(here::here("R", "03_analysis.R"))
+source(here::here("R", "04_plots.R"))
+
+# Order hospitals by total records descending
+hospitals <- hospital_summary |>
+  arrange(desc(total_records)) |>
+  pull(hosp_id)
+```
+
+
+```{r}
+#| results: asis
+#| fig-width: 11
+#| fig-height: 5.5
+
+for (h in hospitals) {
+
+  cat("\n\n---\n\n")
+  cat(glue("## {h}\n\n"))
+
+  p <- plot_daily_bars(
+    data        = progress_daily |> filter(hosp_id == h),
+    hospital_id = h,
+    window      = 30
+  )
+
+  print(p)
+  cat("\n\n")
+}
+```

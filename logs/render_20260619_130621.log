@@ -1,0 +1,19 @@
+[Fri Jun 19 01:06:21 PM EAT 2026] render started — pwd: /home/bob/dev/mar/data-entry-trends
+[13:06:21] ---- Preflight
+[13:06:21] OK   .env
+[13:06:21] OK   report.qmd
+[13:06:21] OK   theme
+[13:06:21] OK   renv.lock
+[13:06:21] OK   R found
+[13:06:21] OK   Quarto
+[13:06:21] ---- Checking renv
+- The project is out-of-sync -- use `renv::status()` for details.
+Error in renv::status(verbose = FALSE) : 
+  unused argument (verbose = FALSE)
+Calls: <Anonymous> -> renv_dots_check
+Traceback (most recent calls last):
+3: renv::status(verbose = FALSE)
+2: renv_dots_check(...)
+1: stop(simpleError(message = message, call = call))
+Execution halted
+[13:06:22] FAIL renv restore failed — check /home/bob/dev/mar/data-entry-trends/logs/render_20260619_130621.log

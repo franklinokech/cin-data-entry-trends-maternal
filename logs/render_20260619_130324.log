@@ -1,0 +1,11 @@
+[Fri Jun 19 01:03:24 PM EAT 2026] render started
+[13:03:24] ---- Preflight
+[13:03:24] OK   .env
+[13:03:24] OK   report.qmd
+[13:03:24] OK   theme
+[13:03:24] OK   R found
+[13:03:24] OK   Quarto found
+Missing: REDCapR, tidyverse, lubridate, dotenv, here, glue, gt, scales 
+Error in quit(1) : one of "yes", "no", "ask" or "default" expected.
+Execution halted
+[13:03:24] FAIL Missing R packages — check /home/bob/dev/mar/data-entry-trends/logs/render_20260619_130324.log

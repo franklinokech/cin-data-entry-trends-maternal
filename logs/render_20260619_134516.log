@@ -1,0 +1,192 @@
+[Fri Jun 19 01:45:16 PM EAT 2026] render started — pwd: /home/bob/dev/mar/data-entry-trends
+[13:45:16] ---- Preflight
+[13:45:16] OK   .env
+[13:45:16] OK   report.qmd
+[13:45:16] OK   theme
+[13:45:16] OK   renv.lock
+[13:45:16] OK   R found
+[13:45:16] OK   Quarto
+[13:45:16] ---- Checking renv
+- The project is out-of-sync -- use `renv::status()` for details.
+The following package(s) are in an inconsistent state:
+
+ package       installed recorded used
+ askpass       y         n        y   
+ backports     y         n        y   
+ base64enc     y         n        y   
+ bit           y         n        y   
+ bit64         y         n        y   
+ blob          y         n        y   
+ broom         y         n        y   
+ bslib         y         n        y   
+ cachem        y         n        y   
+ callr         y         n        y   
+ cellranger    y         n        y   
+ checkmate     y         n        y   
+ cli           y         n        y   
+ clipr         y         n        y   
+ conflicted    y         n        y   
+ cpp11         y         n        y   
+ crayon        y         n        y   
+ curl          y         n        y   
+ data.table    y         n        y   
+ DBI           y         n        y   
+ dbplyr        y         n        y   
+ digest        y         n        y   
+ dotenv        y         n        y   
+ dplyr         y         n        y   
+ dtplyr        y         n        y   
+ evaluate      y         n        y   
+ farver        y         n        y   
+ fastmap       y         n        y   
+ fontawesome   y         n        y   
+ forcats       y         n        y   
+ fs            y         n        y   
+ gargle        y         n        y   
+ generics      y         n        y   
+ ggplot2       y         n        y   
+ glue          y         n        y   
+ googledrive   y         n        y   
+ googlesheets4 y         n        y   
+ gtable        y         n        y   
+ haven         y         n        y   
+ here          y         n        y   
+ highr         y         n        y   
+ hms           y         n        y   
+ htmltools     y         n        y   
+ httr          y         n        y   
+ ids           y         n        y   
+ isoband       y         n        y   
+ jquerylib     y         n        y   
+ jsonlite      y         n        y   
+ knitr         y         n        y   
+ labeling      y         n        y   
+ lifecycle     y         n        y   
+ lubridate     y         n        y   
+ magrittr      y         n        y   
+ memoise       y         n        y   
+ mime          y         n        y   
+ modelr        y         n        y   
+ openssl       y         n        y   
+ otel          y         n        y   
+ pillar        y         n        y   
+ pkgconfig     y         n        y   
+ prettyunits   y         n        y   
+ processx      y         n        y   
+ progress      y         n        y   
+ ps            y         n        y   
+ purrr         y         n        y   
+ R6            y         n        y   
+ ragg          y         n        y   
+ rappdirs      y         n        y   
+ RColorBrewer  y         n        y   
+ readr         y         n        y   
+ readxl        y         n        y   
+ REDCapR       y         n        y   
+ rematch       y         n        y   
+ rematch2      y         n        y   
+ reprex        y         n        y   
+ rlang         y         n        y   
+ rmarkdown     y         n        y   
+ rprojroot     y         n        y   
+ rstudioapi    y         n        y   
+ rvest         y         n        y   
+ S7            y         n        y   
+ sass          y         n        y   
+ scales        y         n        y   
+ selectr       y         n        y   
+ stringi       y         n        y   
+ stringr       y         n        y   
+ sys           y         n        y   
+ systemfonts   y         n        y   
+ textshaping   y         n        y   
+ tibble        y         n        y   
+ tidyr         y         n        y   
+ tidyselect    y         n        y   
+ tidyverse     y         n        y   
+ timechange    y         n        y   
+ tinytex       y         n        y   
+ tzdb          y         n        y   
+ utf8          y         n        y   
+ uuid          y         n        y   
+ vctrs         y         n        y   
+ viridisLite   y         n        y   
+ vroom         y         n        y   
+ withr         y         n        y   
+ xfun          y         n        y   
+ xml2          y         n        y   
+ yaml          y         n        y   
+
+See `?renv::status` for advice on resolving these issues.
+Library out of sync — running renv::restore()
+- The library is already synchronized with the lockfile.
+renv OK
+[13:45:18] OK   renv in sync
+[13:45:18] ---- Checking packages
+- The project is out-of-sync -- use `renv::status()` for details.
+All packages OK
+[13:45:19] OK   Packages OK
+[13:45:19] ---- Archiving previous report
+[13:45:19] OK   Archived
+[13:45:19] ---- Rendering report
+- The project is out-of-sync -- use `renv::status()` for details.
+[31m
+
+processing file: report.qmd
+[39m1/5                  
+2/5 [unnamed-chunk-1]
+3/5                  
+4/5 [unnamed-chunk-2]
+5/5                  
+[31moutput file: report.knit.md
+
+[39m[1mpandoc --output kemri_monitor_2026-06-19.html[22m
+  to: revealjs
+  standalone: true
+  wrap: none
+  default-image-extension: png
+  html-math-method:
+    method: mathjax
+    url: >-
+      https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_HTML-full
+  slide-level: 2
+  css:
+    - assets/kemri.css
+  variables: {}
+  
+[1mmetadata[22m
+  link-citations: true
+  width: 1280
+  height: 720
+  margin: 0.08
+  center: false
+  navigationMode: linear
+  controlsLayout: edges
+  controlsTutorial: false
+  hash: true
+  history: true
+  hashOneBasedIndex: false
+  fragmentInURL: false
+  transition: fade
+  backgroundTransition: fade
+  pdfSeparateFragments: false
+  lang: en
+  auto-stretch: true
+  engines:
+    - path: /usr/share/positron/resources/app/quarto/share/extension-subtrees/julia-engine/_extensions/julia-engine/julia-engine.js
+  title: KEMRI Wellcome Trust
+  subtitle: Data Entry Monitor
+  date: today
+  date-format: DD MMMM YYYY
+  theme: simple
+  slideNumber: true
+  logo: assets/kemri_logo.png
+  
+Output created: output/kemri_monitor_2026-06-19.html
+
+[13:45:33] OK   Render complete
+[13:45:33] ---- Verifying output
+[13:45:33] OK   Output: /home/bob/dev/mar/data-entry-trends/output/kemri_monitor_2026-06-19.html (24K)
+[13:45:33] OK   Latest: /home/bob/dev/mar/data-entry-trends/output/kemri_monitor_latest.html
+[13:45:33] ---- Pruning
+[13:45:33] OK   Pruning done

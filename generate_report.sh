@@ -1,81 +1,78 @@
 #!/usr/bin/env bash
 # ============================================================
-# generate_report.sh — KEMRI Wellcome Trust Data Entry Monitor
+# generate_report.sh — Maternal Data Entry Trends Monitor
 # ============================================================
 
 set -euo pipefail
 
-# ── Config ────────────────────────────────────────────────
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${ROOT}"  # activates renv via .Rprofile
+cd "${ROOT}"
 
 DATE=$(date +"%Y-%m-%d")
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_DIR="${ROOT}/output"
 LOG_DIR="${ROOT}/logs"
-OUT="${OUTPUT_DIR}/kemri_monitor_${DATE}.html"
-LATEST="${OUTPUT_DIR}/kemri_monitor_latest.html"
+STAGING="${ROOT}/render_staging"
+OUT="${OUTPUT_DIR}/kemri_monitor_${DATE}.pptx"
+LATEST="${OUTPUT_DIR}/kemri_monitor_latest.pptx"
 LOG="${LOG_DIR}/render_${TIMESTAMP}.log"
 
-# ── Colours ───────────────────────────────────────────────
-G='\033[0;32m'; Y='\033[1;33m'; R='\033[0;31m'; B='\033[1m'; N='\033[0m'
-
-ok()   { echo -e "${G}  ✓ $*${N}"; echo "[$(date +%T)] OK   $*" >> "${LOG}"; }
-warn() { echo -e "${Y}  ⚠ $*${N}"; echo "[$(date +%T)] WARN $*" >> "${LOG}"; }
-die()  { echo -e "${R}  ✗ $*${N}"; echo "[$(date +%T)] FAIL $*" >> "${LOG}"
-         echo "── last 15 log lines ──"; tail -15 "${LOG}"; exit 1; }
-step() { echo -e "\n${B}▶ $*${N}";  echo "[$(date +%T)] ---- $*" >> "${LOG}"; }
-
-# ── Setup ─────────────────────────────────────────────────
 mkdir -p "${OUTPUT_DIR}/archive" "${LOG_DIR}"
 echo "[$(date)] render started — pwd: ${ROOT}" > "${LOG}"
 
+step() { echo -e "\n▶ $*"; echo "[$(date +%T)] ---- $*" >> "${LOG}"; }
+ok()   { echo "  ✓ $*"; echo "[$(date +%T)] OK   $*" >> "${LOG}"; }
+die()  { echo "  ✗ $*"; echo "[$(date +%T)] FAIL $*" >> "${LOG}";
+         echo "── last 20 log lines ──"; tail -20 "${LOG}"; exit 1; }
+
 # ── Preflight ─────────────────────────────────────────────
 step "Preflight"
-[[ -f ".env"             ]] && ok ".env"       || die ".env missing"
-[[ -f "report.qmd"       ]] && ok "report.qmd" || die "report.qmd missing"
-[[ -f "kemri-theme.scss" ]] && ok "theme"      || warn "theme missing"
-[[ -f "renv.lock"        ]] && ok "renv.lock"  || die "renv.lock missing — is this an renv project?"
-command -v Rscript &>/dev/null && ok "R found"  || die "Rscript not in PATH"
-command -v quarto  &>/dev/null && ok "Quarto"   || die "quarto not in PATH"
+[[ -f "report.qmd"            ]] && ok "report.qmd"  || die "report.qmd missing"
+[[ -f "assets/template.pptx"  ]] && ok "template"    || die "assets/template.pptx missing"
+[[ -f "renv.lock"             ]] && ok "renv.lock"   || die "renv.lock missing"
+command -v quarto  &>/dev/null && ok "quarto CLI"    || die "quarto CLI not in PATH"
+command -v Rscript &>/dev/null && ok "Rscript"       || die "Rscript not in PATH"
 
-# ── renv: restore if library out of sync ──────────────────
-step "Checking renv"
-Rscript -e "
-  if (!requireNamespace('renv', quietly = TRUE)) {
-    cat('renv not installed\n'); quit(status = 1)
-  }
-  st <- renv::status()
-  if (!isTRUE(st\$synchronized)) {
-    cat('Library out of sync — running renv::restore()\n')
-    renv::restore(prompt = FALSE)
-  }
-  cat('renv OK\n')
-" >> "${LOG}" 2>&1 && ok "renv in sync" || die "renv restore failed — check ${LOG}"
-
-
-# ── Verify packages ───────────────────────────────────────
-step "Checking packages"
-Rscript -e "
-  pkgs <- c('REDCapR','tidyverse','lubridate','dotenv','here','glue','scales')
-  miss <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
-  if (length(miss)) { cat('Missing:', paste(miss, collapse=', '), '\n'); quit(status = 1) }
-  cat('All packages OK\n')
-" >> "${LOG}" 2>&1 && ok "Packages OK" || die "Missing packages — run renv::restore() manually"
+# Verify the quarto R package is installed and can see the CLI
+Rscript -e 'if (!requireNamespace("quarto", quietly = TRUE)) quit(status = 1)' \
+  >> "${LOG}" 2>&1 && ok "quarto R package" || die "quarto R package missing — check renv.lock"
 
 # ── Archive previous latest ───────────────────────────────
 if [[ -f "${LATEST}" ]]; then
   step "Archiving previous report"
-  cp "${LATEST}" "${OUTPUT_DIR}/archive/kemri_monitor_prev_${TIMESTAMP}.html"
+  cp "${LATEST}" "${OUTPUT_DIR}/archive/kemri_monitor_prev_${TIMESTAMP}.pptx"
   ok "Archived"
 fi
 
-# ── Render ────────────────────────────────────────────────
+# ── Render into a staging directory ───────────────────────
+# Quarto removes its --output-dir before rendering. Pointing it at the
+# bind-mounted /app/output triggers "Device or resource busy" (EBUSY),
+# because you cannot unlink a mountpoint from inside the container.
+# So render into /app/render_staging, then copy the result into the
+# bind-mounted output directory.
+#
+# Note: quarto R package 1.5.1 does not expose an `output_dir` argument,
+# so we pass `--output-dir` through `quarto_args`.
 step "Rendering report"
-quarto render report.qmd \
-  --output-dir "${OUTPUT_DIR}" \
-  --output "kemri_monitor_${DATE}.html" \
+rm -rf "${STAGING}"
+mkdir -p "${STAGING}"
+
+Rscript -e '
+  args <- commandArgs(trailingOnly = TRUE)
+  quarto::quarto_render(
+    input       = "report.qmd",
+    output_file = args[1],
+    quarto_args = c("--output-dir", args[2]),
+    quiet       = FALSE
+  )
+' "kemri_monitor_${DATE}.pptx" "${STAGING}" \
   >> "${LOG}" 2>&1 && ok "Render complete" || die "Render failed — check ${LOG}"
+
+[[ -f "${STAGING}/kemri_monitor_${DATE}.pptx" ]] \
+  || die "Render produced no output file in ${STAGING}"
+
+cp "${STAGING}/kemri_monitor_${DATE}.pptx" "${OUT}"
+ok "Copied to ${OUT}"
 
 # ── Verify & link ─────────────────────────────────────────
 step "Verifying output"
@@ -87,16 +84,8 @@ ok "Latest: ${LATEST}"
 
 # ── Prune old files (keep 14 archives, 30 logs) ───────────
 step "Pruning"
-ls -1t "${OUTPUT_DIR}/archive"/*.html 2>/dev/null | tail -n +15 | xargs rm -f
-ls -1t "${LOG_DIR}"/render_*.log      2>/dev/null | tail -n +31 | xargs rm -f
+ls -1t "${OUTPUT_DIR}/archive"/*.pptx 2>/dev/null | tail -n +15 | xargs -r rm -f
+ls -1t "${LOG_DIR}"/render_*.log      2>/dev/null | tail -n +31 | xargs -r rm -f
 ok "Pruning done"
 
-# ── Done ──────────────────────────────────────────────────
-echo -e "\n${G}${B}  Report ready → ${LATEST}${N}\n"
-
-# ── Optional: open in browser ─────────────────────────────
-if [[ "${1:-}" == "--open" ]]; then
-  command -v xdg-open &>/dev/null && xdg-open "${LATEST}" || \
-  command -v open     &>/dev/null && open     "${LATEST}" || \
-  warn "Cannot open browser automatically"
-fi
+echo -e "\nReport ready → ${LATEST}\n"

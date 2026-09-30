@@ -30,6 +30,10 @@ source(here::here("R", "02_calendar_dimension.R"))
 source(here::here("R", "03_analysis.R"))
 source(here::here("R", "04_plots.R"))
 
+if (nrow(hospital_summary) == 0) {
+  stop("No hospitals in hospital_summary — check the REDCap pull and date range.")
+}
+
 # Order hospitals by total records descending
 hospitals <- hospital_summary |>
   arrange(desc(total_records)) |>
@@ -47,8 +51,8 @@ for (h in hospitals) {
   cat("\n\n---\n\n")
   cat(glue("## {h}\n\n"))
 
-  p <- plot_daily_bars(
-    data        = progress_daily |> filter(hosp_id == h),
+  p <- plot_daily_stacked(
+    data        = progress_daily_source |> filter(hosp_id == h),
     hospital_id = h,
     window      = 30
   )

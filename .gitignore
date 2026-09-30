@@ -58,3 +58,70 @@ rsconnect/
 
 # End of https://www.toptal.com/developers/gitignore/api/r
 .env
+
+/.quarto/
+**/*.quarto_ipynb
+
+
+# ---------------------------------------------------------------
+# Quarto cache and build artefacts
+# ---------------------------------------------------------------
+.quarto/
+.quarto_ipynb
+**/*.quarto_ipynb
+_freeze/
+
+# ---------------------------------------------------------------
+# Rendered output
+# ---------------------------------------------------------------
+output/
+report.pptx
+report.pdf
+report.html
+report_files/
+
+# ---------------------------------------------------------------
+# Runtime logs
+# ---------------------------------------------------------------
+logs/
+*.log
+
+# ---------------------------------------------------------------
+# Docker
+# ---------------------------------------------------------------
+.env
+.env.*
+
+# ---------------------------------------------------------------
+# R session
+# ---------------------------------------------------------------
+.Rhistory
+.Rapp.history
+.RData
+.RDataTmp
+.Ruserdata
+.Renviron
+.Rproj.user/
+
+# ---------------------------------------------------------------
+# renv library (symlinks to host cache)
+# ---------------------------------------------------------------
+renv/library/
+renv/staging/
+renv/cache/
+renv/local/
+renv/sandbox/
+renv/python/
+
+# Keep these so restore works
+!renv/activate.R
+!renv/settings.json
+!renv/.gitignore
+
+# ---------------------------------------------------------------
+# Editor / OS
+# ---------------------------------------------------------------
+*~
+*.swp
+.DS_Store
+Thumbs.db

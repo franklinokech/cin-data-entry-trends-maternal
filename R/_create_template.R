@@ -4,6 +4,9 @@
 library(officer)
 library(magrittr)
 
+# Ensure assets/ exists
+if (!dir.exists("assets")) dir.create("assets", recursive = TRUE)
+
 # Define KEMRI brand colors
 kemri_colors <- list(
   primary = "#003366",      # Dark blue

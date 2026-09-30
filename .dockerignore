@@ -1,0 +1,16 @@
+.git/
+.env
+output/
+logs/
+.Rproj.user/
+.Rhistory
+.RData
+.Renviron
+*.utf8.md
+*.knit.md
+*_cache/
+docs/
+rsconnect/
+renv/library/
+renv/staging/
+renv/cache/

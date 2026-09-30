@@ -1,5 +1,7 @@
 # R/04_plots.R
-# Simplified with median reference line
+# ============================================================
+# Minimal plotting module for stacked daily data entry bars
+# ============================================================
 
 library(ggplot2)
 library(dplyr)
@@ -7,22 +9,20 @@ library(scales)
 library(lubridate)
 library(glue)
 
-# ── Brand colours ──────────────────────────────────────────────────────────────
-KEMRI_BLUE  <- "#003087"
-KEMRI_TEAL  <- "#00A499"
-KEMRI_LBLUE <- "#6CACE4"
-KEMRI_DGREY <- "#333333"
-KEMRI_LGREY <- "#F2F2F2"
-KEMRI_ORANGE <- "#E8772E"  # For reference line
+# ── Brand colours ────────────────────────────────────────────
+KEMRI_BLUE   <- "#003087"
+KEMRI_TEAL   <- "#00A499"
+KEMRI_LBLUE  <- "#6CACE4"
+KEMRI_DGREY  <- "#333333"
+KEMRI_LGREY  <- "#F2F2F2"
+KEMRI_ORANGE <- "#E8772E"
 
-# ── Base theme ─────────────────────────────────────────────────────────────────
+# ── Base theme (no legend by default) ──────────────────────
 theme_kemri <- function(base_size = 13) {
   theme_minimal(base_size = base_size) +
     theme(
-      text               = element_text(family = "Liberation Sans",
-                                        colour = KEMRI_DGREY),
-      plot.title         = element_text(size = rel(1.25), face = "bold",
-                                        colour = KEMRI_BLUE,
+      text               = element_text(family = "Liberation Sans", colour = KEMRI_DGREY),
+      plot.title         = element_text(size = rel(1.25), face = "bold", colour = KEMRI_BLUE,
                                         margin = margin(b = 6)),
       plot.subtitle      = element_text(size = rel(0.90), colour = "#555555",
                                         margin = margin(b = 10)),
@@ -40,12 +40,12 @@ theme_kemri <- function(base_size = 13) {
                                         angle = 45, hjust = 1, vjust = 1),
       axis.text.y        = element_text(size = rel(0.80), colour = KEMRI_DGREY),
       axis.ticks         = element_blank(),
-      legend.position    = "none",
+      legend.position    = "none",   # default: off, turned on in stacked plot
       plot.margin        = margin(12, 16, 8, 12)
     )
 }
 
-# ── Human-friendly x-axis date labels ─────────────────────────────────────────
+# ── Human‑friendly x‑axis date labels ──────────────────────
 fmt_date_axis <- function(x) {
   paste0(
     substr(weekdays(x, abbreviate = TRUE), 1, 3), " ",
@@ -54,112 +54,65 @@ fmt_date_axis <- function(x) {
   )
 }
 
-# ── Per-hospital daily bar chart with median reference line ──────────────────
-plot_daily_bars <- function(data,
-                            hospital_id,
-                            window     = 30,
-                            bar_colour = KEMRI_TEAL) {
+# ── Simplified stacked bar chart by document_source ──────
+# ── Stacked bar chart, no gaps, one label per bar ────────────
+plot_daily_stacked <- function(data,
+                               hospital_id,
+                               window = 30,
+                               source_colours = c("MAR" = "#003087",
+                                                  "Free Text" = "#6CACE4",
+                                                  "Both MAR and Freetext" = "#00A499")) {
 
-  # ── Slice to window ─────────────────────────────────────────────────────────
+  # 1. Filter to hospital, keep last 'window' working days
   df <- data |>
+    filter(hosp_id == hospital_id) |>
     arrange(work_date) |>
     slice_tail(n = window) |>
-    mutate(
-      x_pos = row_number()
-    )
+    mutate(work_date = as.Date(work_date))
 
   if (nrow(df) == 0) {
-    message(glue("plot_daily_bars: no rows for {hospital_id}"))
+    message(glue("No data for {hospital_id} in the last {window} days"))
     return(NULL)
   }
 
-  max_n       <- max(df$records_entered, na.rm = TRUE)
-  safe_max    <- if (max_n == 0L) 1L else max_n
-  n_bars      <- nrow(df)
-  total_recs  <- sum(df$records_entered, na.rm = TRUE)
-  active_days <- sum(df$records_entered > 0, na.rm = TRUE)
-  
-  # ── Calculate median ────────────────────────────────────────────────────────
-  median_val <- median(df$records_entered, na.rm = TRUE)
-
-  # ── Dynamic label size ──────────────────────────────────────────────────────
-  txt_size <- dplyr::case_when(
-    n_bars <= 14 ~ 3.6,
-    n_bars <= 21 ~ 3.1,
-    n_bars <= 31 ~ 2.7,
-    TRUE         ~ 2.3
-  )
-
-  # ── Label position & ghost bars ─────────────────────────────────────────────
+  # 2. Assign a unique, sequential x_pos per date (no gaps)
   df <- df |>
-    mutate(
-      bar_height = ifelse(records_entered == 0,
-                          safe_max * 0.018,
-                          records_entered),
-      bar_fill   = ifelse(records_entered == 0, "#E0E0E0", bar_colour),
-      lbl_text   = ifelse(records_entered > 0,
-                          as.character(records_entered), ""),
-      inside     = (records_entered / safe_max) >= 0.14,
-      lbl_vjust  = ifelse(inside,  1.6, -0.40),
-      lbl_colour = ifelse(inside, "white", KEMRI_DGREY)
-    )
+    mutate(x_pos = as.numeric(factor(work_date, levels = unique(work_date))))
 
-  # ── Subtitle ────────────────────────────────────────────────────────────────
-  date_from    <- format(min(df$work_date), "%d %b %Y")
-  date_to      <- format(max(df$work_date), "%d %b %Y")
-  subtitle_txt <- glue(
-    "{total_recs} records across {active_days} of {n_bars} working days  ",
-    "({date_from} \u2013 {date_to})  |  Median: {median_val}"
-  )
+  # 3. Compute daily total for label
+  df_plot <- df |>
+    group_by(work_date, x_pos) |>
+    mutate(total = sum(records_entered, na.rm = TRUE)) |>
+    ungroup()
 
-  # ── Plot ────────────────────────────────────────────────────────────────────
-  ggplot(df, aes(x = x_pos)) +
-
-    # bars
-    geom_col(
-      aes(y = bar_height, fill = I(bar_fill)),
-      width = 0.82
-    ) +
-
-    # count labels (non-zero bars only)
+  # 4. Build plot
+  ggplot(df_plot, aes(x = x_pos, y = records_entered)) +
+    geom_col(aes(fill = document_source), width = 0.8, position = "stack") +
     geom_text(
-      data = filter(df, records_entered > 0),
-      aes(y      = records_entered,
-          label  = lbl_text,
-          vjust  = lbl_vjust,
-          colour = I(lbl_colour)),
-      size     = txt_size,
-      fontface = "bold"
+      data = df_plot |> distinct(x_pos, total),
+      aes(x = x_pos, y = total, label = ifelse(total > 0, total, "")),
+      vjust = -0.4, size = 3.2, fontface = "bold", colour = "#333333"
     ) +
-
-    # median reference line
-    geom_hline(
-      yintercept = median_val,
-      color = KEMRI_ORANGE,
-      size = 0.8,
-      linetype = "dashed",
-      alpha = 0.7
-    ) +
-
-    # x-axis labels
+    scale_fill_manual(values = source_colours) +
     scale_x_continuous(
-      breaks = df$x_pos,
-      labels = fmt_date_axis(df$work_date),
+      breaks = df_plot |> distinct(x_pos) |> pull(x_pos),
+      labels = fmt_date_axis(df_plot |> distinct(x_pos, work_date) |> arrange(x_pos) |> pull(work_date)),
       expand = expansion(add = 0.6)
     ) +
-
-    # y-axis
-    scale_y_continuous(
-      breaks = scales::breaks_pretty(n = 5),
-      labels = scales::label_number(accuracy = 1),
-      expand = expansion(mult = c(0, 0.20))
-    ) +
-
+    scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
     labs(
-      title    = glue("Daily Data Entry \u2014 {hospital_id}"),
-      subtitle = subtitle_txt,
-      y        = "Records entered"
+      title    = glue("Daily Data Entry by Source — {hospital_id}"),
+      subtitle = glue(
+        "{sum(df_plot$records_entered)} records over {n_distinct(df_plot$work_date)} days"
+      ),
+      y        = "Records entered",
+      fill     = "Document source"
     ) +
-
-    theme_kemri()
+    theme_kemri() +
+    theme(
+      legend.position = "bottom",
+      legend.title    = element_text(size = rel(0.8)),
+      legend.text     = element_text(size = rel(0.75)),
+      axis.text.x     = element_text(angle = 45, hjust = 1, vjust = 1)
+    )
 }

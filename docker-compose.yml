@@ -1,0 +1,48 @@
+services:
+  maternal-entry-trends:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+      secrets:
+        - GITHUB_PAT
+    image: maternal-entry-trends:dev
+    container_name: maternal-entry-trends
+    working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
+
+    environment:
+      # Config from .env
+      REDCAP_URI:             ${REDCAP_URI}
+      REDCAP_TOKEN:           ${REDCAP_TOKEN}
+      REDCAP_TOKEN_PUMWANI:   ${REDCAP_TOKEN_PUMWANI}
+      START_DATE:             ${START_DATE}
+      END_DATE:               ${END_DATE}
+      TZ:                     Africa/Nairobi
+
+    volumes:
+      # Source code — bind mounted for hot reload
+      - ./R:/app/R
+      - ./report.qmd:/app/report.qmd
+      - ./generate_report.sh:/app/generate_report.sh
+      - ./create_branded_template.R:/app/create_branded_template.R
+      - ./assets:/app/assets
+      - ./renv.lock:/app/renv.lock:ro
+
+      # Output and logs land on the host
+      - ./output:/app/output
+      - ./logs:/app/logs
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
+
+    command: ["bash", "generate_report.sh"]
+
+secrets:
+  GITHUB_PAT:
+    environment: GITHUB_PAT

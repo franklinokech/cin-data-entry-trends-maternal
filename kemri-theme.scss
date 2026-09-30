@@ -1,0 +1,115 @@
+/*-- scss:defaults --*/
+
+// ── Brand colours ─────────────────────────────────────────
+$wellcome-blue:  #003087;
+$wellcome-teal:  #00A499;
+$light-blue:     #6CACE4;
+$white:          #FFFFFF;
+$dark-grey:      #333333;
+$light-grey:     #F2F2F2;
+
+// ── Reveal overrides ──────────────────────────────────────
+$backgroundColor:    $wellcome-blue;
+$mainColor:          $white;
+$headingColor:       $white;
+$linkColor:          $light-blue;
+$selectionBackgroundColor: $wellcome-teal;
+
+$mainFont:           'Liberation Sans', Arial, sans-serif;
+$headingFont:        'Liberation Sans', Arial, sans-serif;
+$headingFontWeight:  700;
+
+$mainFontSize:       28px;
+$heading1Size:       2.0em;
+$heading2Size:       1.4em;
+$heading3Size:       1.1em;
+
+/*-- scss:rules --*/
+
+// ── Slide background ───────────────────────────────────────
+.reveal .slides {
+  background-color: $wellcome-blue;
+}
+
+// ── Header accent bar (teal line under h2) ─────────────────
+.reveal .slides section h2 {
+  color:         $white;
+  border-bottom: 4px solid $wellcome-teal;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+// ── Body text ──────────────────────────────────────────────
+.reveal .slides section p,
+.reveal .slides section li {
+  color:     $white;
+  font-size: 0.85em;
+}
+
+// ── Bullet colour ─────────────────────────────────────────
+.reveal .slides section ul li::marker,
+.reveal .slides section ol li::marker {
+  color: $wellcome-teal;
+}
+
+// ── Footer ────────────────────────────────────────────────
+.reveal .footer {
+  background-color: $wellcome-blue;
+  border-top:       2px solid $wellcome-teal;
+  color:            $light-blue;
+  font-size:        0.55em;
+  padding:          4px 16px;
+}
+
+// ── Slide number ──────────────────────────────────────────
+.reveal .slide-number {
+  background-color: $wellcome-blue;
+  color:            $wellcome-teal;
+  font-size:        0.55em;
+}
+
+// ── Progress bar ──────────────────────────────────────────
+.reveal .progress {
+  color: $wellcome-teal;
+}
+
+// ── Title slide ───────────────────────────────────────────
+.reveal .title-slide h1 {
+  color:     $white;
+  font-size: 2em;
+}
+
+.reveal .title-slide .subtitle {
+  color:     $light-blue;
+  font-size: 1.1em;
+}
+
+.reveal .title-slide .author,
+.reveal .title-slide .date {
+  color:     $wellcome-teal;
+  font-size: 0.8em;
+}
+
+// ── gt table dark theme ───────────────────────────────────
+.gt_table {
+  background-color: $wellcome-blue !important;
+  color:            $white         !important;
+  border-color:     $wellcome-teal !important;
+}
+
+.gt_col_heading {
+  background-color: $wellcome-blue !important;
+  color:            $white         !important;
+  font-weight:      bold           !important;
+  border-bottom:    2px solid $wellcome-teal !important;
+}
+
+.gt_row {
+  background-color: $wellcome-blue !important;
+  color:            $white         !important;
+  border-color:     #FFFFFF22      !important;
+}
+
+.gt_row:nth-child(even) {
+  background-color: #002070 !important;
+}
